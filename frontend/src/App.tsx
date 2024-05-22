@@ -1,11 +1,35 @@
-import "./App.css";
-import { Button } from "react-bootstrap";
+import { useEffect, useState } from "react";
+import { Note as NoteModel } from "./types/note";
+import Note from "./components/Note";
+import { Col, Container, Row } from "react-bootstrap";
+import styles from "./styles/NotePage.module.css";
 
 function App() {
+  const [notes, setNotes] = useState<NoteModel[]>([]);
+
+  useEffect(() => {
+    async function loadNotes() {
+      try {
+        const res = await fetch("/api/notes");
+        const data = await res.json();
+        setNotes(data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    loadNotes();
+  }, []);
+
   return (
-    <div>
-      <Button>Bs Button</Button>
-    </div>
+    <Container>
+      <Row sx={1} md={2} lg={3} xl={4} className="g-4">
+        {notes.map((note) => (
+          <Col key={note._id}>
+            <Note note={note} className={styles.note} />
+          </Col>
+        ))}
+      </Row>
+    </Container>
   );
 }
 
