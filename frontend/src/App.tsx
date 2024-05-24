@@ -5,11 +5,12 @@ import { Button, Col, Container, Row } from "react-bootstrap";
 import styles from "./styles/NotePage.module.css";
 import styledUtils from "./styles/utils.module.css";
 import * as NotesApi from "./network/note_api";
-import AddNoteDialog from "./components/AddNoteDialog";
+import AddEditNoteDialog from "./components/AddEditNoteDialog";
 
 function App() {
   const [notes, setNotes] = useState<NoteModel[]>([]);
   const [showModel, setShowModel] = useState(false);
+  const [noteToEdit, setNoteToEdit] = useState<NoteModel | null>(null);
 
   useEffect(() => {
     async function loadNotes() {
@@ -47,17 +48,34 @@ function App() {
             <Note
               note={note}
               className={styles.note}
+              onNoteClicked={setNoteToEdit}
               onDeleteClick={handleDelete}
             />
           </Col>
         ))}
       </Row>
       {showModel && (
-        <AddNoteDialog
-          onDismiss={() => setShowModel(false)}
+        <AddEditNoteDialog
+          onDismiss={() => {
+            setShowModel(false);
+          }}
           onNoteSave={(note) => {
             setShowModel(false);
             setNotes((prev) => [...prev, note]);
+          }}
+        />
+      )}
+      {noteToEdit && (
+        <AddEditNoteDialog
+          noteToEdit={noteToEdit}
+          onDismiss={() => setNoteToEdit(null)}
+          onNoteSave={(updatedNote) => {
+            setNotes(
+              notes.map((note) =>
+                note._id === updatedNote._id ? updatedNote : note
+              )
+            );
+            setNoteToEdit(null);
           }}
         />
       )}

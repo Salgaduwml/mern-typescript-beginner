@@ -4,20 +4,36 @@ import { useForm } from "react-hook-form";
 import { NoteInput } from "../network/note_api";
 import * as NotesApi from "../network/note_api";
 
-interface AddNoteDialogProps {
+interface AddEditNoteDialogProps {
+  noteToEdit?: Note;
   onDismiss: () => void;
   onNoteSave: (note: Note) => void;
 }
 
-const AddNoteDialog = ({ onDismiss, onNoteSave }: AddNoteDialogProps) => {
+const AddEditNoteDialog = ({
+  noteToEdit,
+  onDismiss,
+  onNoteSave,
+}: AddEditNoteDialogProps) => {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<NoteInput>();
-  async function onSubmit(note: NoteInput) {
+  } = useForm<NoteInput>({
+    defaultValues: {
+      title: noteToEdit?.title || "",
+      text: noteToEdit?.text || "",
+    },
+  });
+  async function onSubmit(input: NoteInput) {
     try {
-      const noteResponse = await NotesApi.createNote(note);
+      let noteResponse;
+      if (noteToEdit) {
+        noteResponse = await NotesApi.updateNote(input, noteToEdit._id);
+      } else {
+        noteResponse = await NotesApi.createNote(input);
+      }
+
       onNoteSave(noteResponse);
     } catch (error) {
       console.error(error);
@@ -27,7 +43,7 @@ const AddNoteDialog = ({ onDismiss, onNoteSave }: AddNoteDialogProps) => {
   return (
     <Modal show onHide={onDismiss}>
       <Modal.Header closeButton>
-        <Modal.Title>Add Note</Modal.Title>
+        <Modal.Title>{noteToEdit ? "Edit Note" : "Add Note"}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form id="addNoteForm" onSubmit={handleSubmit(onSubmit)}>
@@ -62,4 +78,4 @@ const AddNoteDialog = ({ onDismiss, onNoteSave }: AddNoteDialogProps) => {
   );
 };
 
-export default AddNoteDialog;
+export default AddEditNoteDialog;

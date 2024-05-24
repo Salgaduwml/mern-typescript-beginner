@@ -5,12 +5,13 @@ import { formatDate } from "../utils/formatDate";
 import styledUtils from "../styles/utils.module.css";
 
 interface NoteProps {
+  onNoteClicked: (note: NoteModel) => void;
   note: NoteModel;
   className: string;
   onDeleteClick: (note: NoteModel) => void;
 }
 
-const Note = ({ note, className, onDeleteClick }: NoteProps) => {
+const Note = ({ note, className, onDeleteClick, onNoteClicked }: NoteProps) => {
   const { title, text, createdAt, updatedAt } = note;
 
   let lastUpdated: string;
@@ -21,7 +22,10 @@ const Note = ({ note, className, onDeleteClick }: NoteProps) => {
   }
 
   return (
-    <Card className={`${styles.noteCard} ${className}`}>
+    <Card
+      onClick={() => onNoteClicked(note)}
+      className={`${styles.noteCard} ${className}`}
+    >
       <Card.Body>
         <Card.Title className={styledUtils.flexCenter}>
           {title}
