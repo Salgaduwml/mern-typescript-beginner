@@ -2,8 +2,10 @@ import { useForm } from "react-hook-form";
 import { User } from "../types/user";
 import { LoginCredentials } from "../network/note_api";
 import * as NotesApi from "../network/note_api";
-import { Button, Form, Modal } from "react-bootstrap";
+import { Alert, Button, Form, Modal } from "react-bootstrap";
 import TextInputField from "./form/TextInputField";
+import { useState } from "react";
+import { UnauthorizedError } from "../errors/htpp_errors";
 
 interface LoginModelProps {
   onDismiss: () => void;
@@ -11,6 +13,7 @@ interface LoginModelProps {
 }
 
 const LoginModel = ({ onDismiss, onLoginSuccessful }: LoginModelProps) => {
+  const [errorText, setErrorText] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -21,7 +24,11 @@ const LoginModel = ({ onDismiss, onLoginSuccessful }: LoginModelProps) => {
       const user = await NotesApi.login(credentials);
       onLoginSuccessful(user);
     } catch (error) {
-      alert(error);
+      if (error instanceof UnauthorizedError) {
+        setErrorText(error.message);
+      } else {
+        alert(error);
+      }
       console.error(error);
     }
   }
@@ -29,6 +36,7 @@ const LoginModel = ({ onDismiss, onLoginSuccessful }: LoginModelProps) => {
     <Modal show onHide={onDismiss}>
       <Modal.Header>Log in</Modal.Header>
       <Modal.Body>
+        {errorText && <Alert variant="danger">{errorText}</Alert>}
         <Form onSubmit={handleSubmit(onSubmit)} id="signUp">
           <TextInputField
             name="username"

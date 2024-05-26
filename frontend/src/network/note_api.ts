@@ -1,3 +1,4 @@
+import { ConflictError, UnauthorizedError } from "../errors/htpp_errors";
 import { Note } from "../types/note";
 import { User } from "../types/user";
 
@@ -9,7 +10,13 @@ async function fetchData(input: RequestInfo, init?: RequestInit) {
   } else {
     const resBody = await res.json();
     const errorMessage = resBody.error;
-    throw Error(errorMessage);
+    if (res.status === 401) {
+      throw new UnauthorizedError(errorMessage);
+    } else if (res.status === 409) {
+      throw new ConflictError(errorMessage);
+    } else {
+      throw Error(errorMessage);
+    }
   }
 }
 
